@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Toast from 'react-native-toast-message'
+
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: '', error: '' })
@@ -29,7 +29,7 @@ export default function LoginScreen({ navigation }) {
     baseURL: 'http://192.168.15.7:1001/api',
   })
 
-  async function onLoginPressed() {
+  async function onLoginPressed(){
     const emailError = emailValidator(email.value)
     const passwordError = passwordValidator(password.value)
     if (emailError || passwordError) {
@@ -37,19 +37,15 @@ export default function LoginScreen({ navigation }) {
       setPassword({ ...password, error: passwordError })
       return
     }
-    const login = await instance
-      .post(`login?email=${email.value}&password=${password.value}`)
-      .then(function (response) {
-        const data = response.data
-        AsyncStorage.setItem('@token', data.token)
-        navigation.navigate('Dashboard')
-      })
-      .catch(function (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Ops, Alguma coisa deu errado!',
-        })
-      })
+    const login = await instance.post(
+      `login?email=${email.value}&password=${password.value}`
+    )
+    const data = await login.data
+
+    if (data.message == "true") {
+      await AsyncStorage.setItem('@token', data.token)
+      navigation.navigate('Dashboard')
+    }
   }
 
   return (
@@ -59,7 +55,6 @@ export default function LoginScreen({ navigation }) {
       end={{ x: 0, y: 1 }}
       style={styles.background}
     >
-      <Toast position="top" bottomOffset={25} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
